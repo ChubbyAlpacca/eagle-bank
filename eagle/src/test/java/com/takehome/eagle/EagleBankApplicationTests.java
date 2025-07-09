@@ -1,4 +1,4 @@
-package com.take_home.eagle;
+package com.takehome.eagle;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
