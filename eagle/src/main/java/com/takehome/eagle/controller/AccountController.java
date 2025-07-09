@@ -1,8 +1,8 @@
 package com.takehome.eagle.controller;
 
-import com.takehome.eagle.api.AccountApi;
+import org.openapitools.client.api.AccountApi;
 
-public class AccountController implements AccountApi {
+public class AccountController extends AccountApi {
 
 
 }
