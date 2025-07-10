@@ -1,1 +1,3 @@
 databaseChangeLog:
+    - include:
+          file: db/static/data.load.yml

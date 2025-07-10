@@ -2,20 +2,24 @@ package com.takehome.eagle.controller;
 
 import com.takehome.eagle.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.openapitools.client.api.UserApi;
+import lombok.extern.slf4j.Slf4j;
 import org.openapitools.client.model.UserResponse;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
+@Slf4j
+@RequestMapping("/v1/users")
 @RequiredArgsConstructor
-public class UserController extends UserApi {
+public class UserController {
 
-//    private final UserService userService;
+    private final UserService userService;
 
-    public UserResponse createUser(UserResponse userResponse) {
-        // Implementation for creating a user
-//        System.out.println(userService.createUser(userResponse));
-        return userResponse; // Placeholder return, replace with actual logic
+    @PostMapping
+    public UserResponse createUser(@RequestBody UserResponse userResponse) {
+        userService.createUser(userResponse);
+        return userResponse;
     }
-
 }

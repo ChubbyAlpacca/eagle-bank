@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: data.load
+      author: turkey
+      runAlways: true
+      changes:
+        - loadData:
+            file: db/static/users_data.csv
+            tableName: USERS
