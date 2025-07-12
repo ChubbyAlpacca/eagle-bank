@@ -6,4 +6,6 @@ public interface UserService {
 
     UserResponse createUser(UserResponse userResponse);
 
+    UserResponse getuserById(String userId);
+
 }
