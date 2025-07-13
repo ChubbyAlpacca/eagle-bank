@@ -22,25 +22,21 @@
 	</properties>
 
 	<dependencies>
-		<!-- Spring Boot Web -->
+		<!-- Spring Boot -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
-		<!-- Spring Boot Data JPA -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-
-		<!-- Spring Data REST (optional) -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
 		</dependency>
 
-		<!-- Liquibase for DB migrations -->
+		<!-- Liquibase -->
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
@@ -66,15 +62,7 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- OpenAPI (generated models) -->
-		<dependency>
-			<groupId>org.openapitools</groupId>
-			<artifactId>openapi-java-client</artifactId>
-			<version>v1.0.0</version>
-			<scope>compile</scope>
-		</dependency>
-
-		<!-- JSON mapper -->
+		<!-- Jackson -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
@@ -87,14 +75,14 @@
 			<version>3.0.2</version>
 		</dependency>
 
-		<!-- Swagger/OpenAPI Annotations -->
+		<!-- Swagger Annotations -->
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-annotations</artifactId>
 			<version>2.2.15</version>
 		</dependency>
 
-		<!-- H2 in-memory database -->
+		<!-- H2 Database -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
@@ -109,7 +97,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Jakarta Annotations (if needed) -->
+		<!-- Jakarta Annotations -->
 		<dependency>
 			<groupId>jakarta.annotation</groupId>
 			<artifactId>jakarta.annotation-api</artifactId>
@@ -133,6 +121,8 @@
 				<version>7.6.0</version>
 				<executions>
 					<execution>
+						<id>generate-openapi-sources</id>
+						<phase>generate-sources</phase>
 						<goals>
 							<goal>generate</goal>
 						</goals>
@@ -146,6 +136,30 @@
 								<interfaceOnly>true</interfaceOnly>
 								<useTags>true</useTags>
 							</configOptions>
+							<additionalProperties>
+								<cleanOutput>true</cleanOutput>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Add generated sources to classpath -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>add-generated-sources</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>add-source</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>${project.build.directory}/generated-sources/openapi/src/main/java</source>
+							</sources>
 						</configuration>
 					</execution>
 				</executions>
