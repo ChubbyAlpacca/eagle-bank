@@ -1,6 +1,6 @@
 package com.takehome.eagle.service;
 
-import org.openapitools.client.model.UserResponse;
+import com.takehome.eagle.model.UserResponse;
 
 public interface UserService {
 

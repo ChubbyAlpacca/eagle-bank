@@ -5,7 +5,7 @@ import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.openapitools.client.model.UserResponse;
+import com.takehome.eagle.model.UserResponse;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 

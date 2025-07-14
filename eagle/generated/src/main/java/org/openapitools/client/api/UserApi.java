@@ -31,7 +31,7 @@ import org.openapitools.client.model.BadRequestErrorResponse;
 import org.openapitools.client.model.CreateUserRequest;
 import org.openapitools.client.model.ErrorResponse;
 import org.openapitools.client.model.UpdateUserRequest;
-import org.openapitools.client.model.UserResponse;
+import com.takehome.eagle.model.UserResponse;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
