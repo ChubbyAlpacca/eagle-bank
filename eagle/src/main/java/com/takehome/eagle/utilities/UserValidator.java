@@ -8,10 +8,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Service
 public class UserValidator {
 
-     final String FIELD_EMPTY_OR_NULL = "This is a required field and cannot be empty or null";
+    final String FIELD_EMPTY_OR_NULL = "This is a required field and cannot be empty or null";
 
     public void validateCreateUserRequest(CreateUserRequest request) {
         BadRequestErrorResponse response = new BadRequestErrorResponse();
