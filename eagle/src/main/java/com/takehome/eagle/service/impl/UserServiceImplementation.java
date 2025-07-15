@@ -1,6 +1,9 @@
 package com.takehome.eagle.service.impl;
+import com.takehome.eagle.entity.Address;
 import com.takehome.eagle.entity.User;
 import com.takehome.eagle.exceptions.EagleBankException;
+import com.takehome.eagle.model.CreateUserRequest;
+import com.takehome.eagle.model.CreateUserRequestAddress;
 import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +12,7 @@ import com.takehome.eagle.model.UserResponse;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -19,14 +23,26 @@ public class UserServiceImplementation implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserResponse createUser(UserResponse userResponse) {
-        log.info("Creating user with details: {}", userResponse);
+    public UserResponse createUser(CreateUserRequest payload) {
+        log.info("Creating user with details: {}", payload);
+        var userId = UUID.randomUUID();
         var user = User.builder()
-                .userId(UUID.randomUUID())
-                .name(userResponse.getName())
-                .email(userResponse.getEmail())
-                .phoneNumber(userResponse.getPhoneNumber())
+                .userId(userId)
+                .name(payload.getName())
+                .email(payload.getEmail())
+                .phoneNumber(payload.getPhoneNumber())
+                .createdAt(LocalDateTime.now())
                 .build();
+        var address = Address.builder()
+                .line1(payload.getAddress().getLine1())
+                .line2(payload.getAddress().getLine2())
+                .line3(payload.getAddress().getLine3())
+                .town(payload.getAddress().getTown())
+                .county(payload.getAddress().getCounty())
+                .postcode(payload.getAddress().getPostcode())
+                .user(user)
+                .build();
+        user.setAddress(address);
         try {
              User persistedUser = userRepository.save(user);
             return mapToUserResponse(persistedUser);
@@ -47,7 +63,17 @@ public class UserServiceImplementation implements UserService {
                 .id(user.getUserId().toString())
                 .name(user.getName())
                 .email(user.getEmail())
-                .address(null) // Assuming address is not part of UserResponse
+                .address(mapToAddressResponse(user.getAddress())) // Assuming address is not part of UserResponse
                 .phoneNumber(user.getPhoneNumber());
+    }
+
+    private CreateUserRequestAddress mapToAddressResponse(Address address) {
+        return new CreateUserRequestAddress()
+                .line1(address.getLine1())
+                .line2(address.getLine2())
+                .line3(address.getLine3())
+                .town(address.getTown())
+                .county(address.getCounty())
+                .postcode(address.getPostcode());
     }
 }

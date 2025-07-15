@@ -837,6 +837,11 @@ components:
           type: string
           examples:
             - "Test User"
+        password:
+            type: string
+            format: password
+            examples:
+                - "yourPassword"
         address:
           type: object
           required:

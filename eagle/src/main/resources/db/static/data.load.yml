@@ -1,9 +1,17 @@
 databaseChangeLog:
   - changeSet:
-      id: data.load
+      id: load-users
       author: turkey
       runAlways: true
       changes:
         - loadData:
             file: db/static/users_data.csv
             tableName: USERS
+  - changeSet:
+      id: load-address
+      author: turkey
+      runAlways: true
+      changes:
+        - loadData:
+            file: db/static/address_data.csv
+            tableName: ADDRESS

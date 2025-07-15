@@ -1,4 +1,9 @@
 spring:
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: "*"
   h2:
     console:
       enabled: true
@@ -19,3 +24,5 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
 jwt:
   secret: very-very-secret-key-must-be-32+chars
+encryption:
+  salt: eagle-salt
