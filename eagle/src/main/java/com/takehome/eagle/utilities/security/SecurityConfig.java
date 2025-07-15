@@ -20,13 +20,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                                .requestMatchers("/**").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/v1/auth/token").permitAll()
+//                        .requestMatchers(HttpMethod.POST, "/v1/users").permitAll()
+//                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

@@ -9,4 +9,6 @@ public interface UserService {
 
     UserResponse getuserById(String userId);
 
+    String getUserAuthDetailsByUserName(String userName);
+
 }

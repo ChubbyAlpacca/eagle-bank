@@ -20,7 +20,7 @@ import jakarta.annotation.Generated;
  */
 
 @JsonTypeName("getJwtToken_request")
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-07-15T13:15:01.529783+01:00[Europe/London]", comments = "Generator version: 7.6.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-07-15T16:50:45.816072+01:00[Europe/London]", comments = "Generator version: 7.6.0")
 public class GetJwtTokenRequest {
 
   private String username;

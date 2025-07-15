@@ -6,6 +6,7 @@ import com.takehome.eagle.model.CreateUserRequest;
 import com.takehome.eagle.model.CreateUserRequestAddress;
 import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.service.UserService;
+import com.takehome.eagle.utilities.EncryptionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.takehome.eagle.model.UserResponse;
@@ -21,7 +22,7 @@ import java.util.UUID;
 public class UserServiceImplementation implements UserService {
 
     private final UserRepository userRepository;
-
+    private final EncryptionService encryptionService;
     @Override
     public UserResponse createUser(CreateUserRequest payload) {
         log.info("Creating user with details: {}", payload);
@@ -29,6 +30,7 @@ public class UserServiceImplementation implements UserService {
         var user = User.builder()
                 .userId(userId)
                 .name(payload.getName())
+                .password(encryptionService.encrypt(payload.getPassword()))
                 .email(payload.getEmail())
                 .phoneNumber(payload.getPhoneNumber())
                 .createdAt(LocalDateTime.now())
@@ -57,6 +59,14 @@ public class UserServiceImplementation implements UserService {
         log.info("Fetched user with ID: {}", userId);
         return mapToUserResponse(user);
     }
+
+    @Override
+    public String getUserAuthDetailsByUserName(String userName) {
+        return userRepository.getUserByName(userName)
+                .map(User::getPassword)
+                .orElseThrow(() -> new EagleBankException("User not found", HttpStatusCode.valueOf(404)));
+    }
+
 
     private UserResponse mapToUserResponse(User user) {
         return new UserResponse()

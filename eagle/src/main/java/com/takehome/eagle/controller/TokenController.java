@@ -3,6 +3,9 @@ package com.takehome.eagle.controller;
 import com.takehome.eagle.api.AuthApi;
 import com.takehome.eagle.model.GetJwtToken200Response;
 import com.takehome.eagle.model.GetJwtTokenRequest;
+import com.takehome.eagle.repository.UserRepository;
+import com.takehome.eagle.service.UserService;
+import com.takehome.eagle.utilities.EncryptionService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -31,8 +34,12 @@ public class TokenController implements AuthApi {
     @Value("${jwt.secret}")
     private String secretKey;
 
+    private final EncryptionService encryptionService;
+    private final UserService userService;
+
     @Override
     public ResponseEntity<GetJwtToken200Response> getJwtToken(GetJwtTokenRequest getJwtTokenRequest) {
+        encryptionService.verify(getJwtTokenRequest.getPassword(), userService.getUserAuthDetailsByUserName(getJwtTokenRequest.getUsername()));
         log.info("Generating JWT");
         var token = generateJwtToken(getJwtTokenRequest.getUsername(), getJwtTokenRequest.getPassword());
         return new ResponseEntity<>(new GetJwtToken200Response().token(token), HttpStatus.CREATED);
