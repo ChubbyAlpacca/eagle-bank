@@ -1,13 +1,11 @@
 package com.takehome.eagle.controller;
 
 import com.takehome.eagle.api.AuthApi;
-import com.takehome.eagle.exceptions.EagleBankException;
-import com.takehome.eagle.model.BadRequestErrorResponse;
 import com.takehome.eagle.model.BadRequestErrorResponseDetailsInner;
 import com.takehome.eagle.model.GetJwtToken200Response;
 import com.takehome.eagle.model.GetJwtTokenRequest;
 import com.takehome.eagle.service.UserService;
-import com.takehome.eagle.utilities.EncryptionService;
+import com.takehome.eagle.utilities.AuthService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -21,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
-import java.util.List;
 
 @RestController
 @Slf4j
@@ -31,12 +28,12 @@ public class TokenController implements AuthApi {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    private final EncryptionService encryptionService;
+    private final AuthService authService;
     private final UserService userService;
 
     @Override
     public ResponseEntity<GetJwtToken200Response> getJwtToken(GetJwtTokenRequest getJwtTokenRequest) {
-        boolean verified = encryptionService.verify(getJwtTokenRequest.getPassword(), userService.getUserAuthDetailsByUserName(getJwtTokenRequest.getUsername()));
+        boolean verified = authService.verify(getJwtTokenRequest.getPassword(), userService.getUserAuthDetailsByUserName(getJwtTokenRequest.getUsername()));
         if (!verified) {
             log.warn("Invalid credentials for user: {}", getJwtTokenRequest.getUsername());
             //intentionally vague to avoid leaking user existence

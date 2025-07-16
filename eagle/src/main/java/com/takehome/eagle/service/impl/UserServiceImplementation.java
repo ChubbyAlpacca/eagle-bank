@@ -7,7 +7,7 @@ import com.takehome.eagle.model.CreateUserRequestAddress;
 import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.service.UserService;
-import com.takehome.eagle.utilities.EncryptionService;
+import com.takehome.eagle.utilities.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ import java.util.UUID;
 public class UserServiceImplementation implements UserService {
 
     private final UserRepository userRepository;
-    private final EncryptionService encryptionService;
+    private final AuthService authService;
     @Override
     public UserResponse createUser(CreateUserRequest payload) {
         log.info("Creating user with details: {}", payload);
@@ -33,7 +33,7 @@ public class UserServiceImplementation implements UserService {
         var user = User.builder()
                 .userId(userId)
                 .name(payload.getName())
-                .password(encryptionService.encrypt(payload.getPassword()))
+                .password(authService.encrypt(payload.getPassword()))
                 .email(payload.getEmail())
                 .phoneNumber(payload.getPhoneNumber())
                 .createdAt(LocalDateTime.now())

@@ -34,12 +34,4 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-    @Bean
-    public ApplicationRunner runner() {
-        return args -> {
-            System.out.println("Custom security config active.");
-        };
-    }
-
 }

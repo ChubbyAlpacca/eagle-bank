@@ -3,7 +3,7 @@ package com.takehome.eagle.controller;
 import com.takehome.eagle.model.GetJwtToken200Response;
 import com.takehome.eagle.model.GetJwtTokenRequest;
 import com.takehome.eagle.service.UserService;
-import com.takehome.eagle.utilities.EncryptionService;
+import com.takehome.eagle.utilities.AuthService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -24,7 +23,7 @@ import static org.mockito.Mockito.*;
 class TokenControllerTest {
 
     @Mock
-    private EncryptionService encryptionService;
+    private AuthService authService;
 
     @Mock
     private UserService userService;
@@ -57,7 +56,7 @@ class TokenControllerTest {
         when(userService.getUserAuthDetailsByUserName(username)).thenReturn(password);
 
         // Since verify returns boolean, stub it to return true to simulate successful verification
-        when(encryptionService.verify(password, password)).thenReturn(true);
+        when(authService.verify(password, password)).thenReturn(true);
 
         GetJwtTokenRequest request = new GetJwtTokenRequest();
         request.setUsername(username);
@@ -66,7 +65,7 @@ class TokenControllerTest {
         ResponseEntity<GetJwtToken200Response> response = tokenController.getJwtToken(request);
 
         // Verify interactions
-        verify(encryptionService, times(1)).verify(password, password);
+        verify(authService, times(1)).verify(password, password);
         verify(userService, times(1)).getUserAuthDetailsByUserName(username);
 
         // Assert response status and token presence
@@ -104,7 +103,7 @@ class TokenControllerTest {
         when(userService.getUserAuthDetailsByUserName(username)).thenReturn(password);
 
         // Simulate encryptionService throwing an exception on invalid password
-        doThrow(new RuntimeException("Invalid password")).when(encryptionService).verify(password, password);
+        doThrow(new RuntimeException("Invalid password")).when(authService).verify(password, password);
 
         GetJwtTokenRequest request = new GetJwtTokenRequest();
         request.setUsername(username);
@@ -117,7 +116,7 @@ class TokenControllerTest {
 
         assertEquals("Invalid password", thrown.getMessage());
 
-        verify(encryptionService, times(1)).verify(password, password);
+        verify(authService, times(1)).verify(password, password);
         verify(userService, times(1)).getUserAuthDetailsByUserName(username);
     }
 }

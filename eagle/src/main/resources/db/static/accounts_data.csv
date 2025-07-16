@@ -1,0 +1,3 @@
+ID,ACCOUNT_ID,USER_ID,NAME,ACCOUNT_TYPE,UPDATED_AT
+1,acc-001,e66d558d-7732-4bb6-af48-8d76e0c9a937,Personal Checking,personal,'2025-07-16T10:00:00Z'
+2,acc-002,e66d558d-7732-4bb6-af48-8d76e0c9a937,Savings Account,personal,'2025-07-16T10:05:00Z'

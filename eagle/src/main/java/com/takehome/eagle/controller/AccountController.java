@@ -1,16 +1,19 @@
 package com.takehome.eagle.controller;
 
 import com.takehome.eagle.api.AccountApi;
+import com.takehome.eagle.exceptions.EagleBankException;
 import com.takehome.eagle.model.BankAccountResponse;
 import com.takehome.eagle.model.CreateBankAccountRequest;
 import com.takehome.eagle.model.ListBankAccountsResponse;
 import com.takehome.eagle.model.UpdateBankAccountRequest;
+import com.takehome.eagle.utilities.AuthService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AccountController implements AccountApi {
+
+    private final AuthService authService;
 
     @Override
     public ResponseEntity<BankAccountResponse> createAccount(
@@ -56,6 +61,13 @@ public class AccountController implements AccountApi {
             @Pattern(regexp = "^01\\d{6}$") @Parameter(name = "accountNumber", description = "Account number of the bank account", required = true, in = ParameterIn.PATH) @PathVariable("accountNumber") String accountNumber
     ) {
         return null;
+    }
+
+    private void isAuthenticatedUser(String userId) {
+        String authenticatedUserId = authService.getAuthenticatedUserId();
+        if (!userId.equals(authenticatedUserId)) {
+            throw new EagleBankException("Access denied.", HttpStatus.FORBIDDEN);
+        }
     }
 
 }

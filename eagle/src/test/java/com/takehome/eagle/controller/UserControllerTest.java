@@ -1,8 +1,6 @@
 package com.takehome.eagle.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.takehome.eagle.entity.Address;
-import com.takehome.eagle.entity.User;
 import com.takehome.eagle.exceptions.EagleBankException;
 import com.takehome.eagle.exceptions.GlobalExceptionHandler;
 import com.takehome.eagle.model.CreateUserRequest;
@@ -10,8 +8,7 @@ import com.takehome.eagle.model.CreateUserRequestAddress;
 import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.model.UserResponse;
 import com.takehome.eagle.service.UserService;
-import com.takehome.eagle.service.impl.UserServiceImplementation;
-import com.takehome.eagle.utilities.EncryptionService;
+import com.takehome.eagle.utilities.AuthService;
 import com.takehome.eagle.utilities.UserValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-
-import java.util.Optional;
-import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -44,7 +38,7 @@ class UserControllerTest {
     private UserValidator userValidator;
 
     @Mock
-    private EncryptionService encryptionService;
+    private AuthService authService;
 
     @InjectMocks
     private UserController userController;
@@ -92,18 +86,15 @@ class UserControllerTest {
                 .build();
     }
 
+    // CREATE user tests - no userId path check needed (new user)
     @Test
     void createUser_Success() throws Exception {
-        // Given
         CreateUserRequest createUserRequest = createValidUserRequest();
-
         UserResponse expectedResponse = createUserResponse("usr-123456", "John Doe", "john.doe@example.com");
 
-        // Mock behavior
         doNothing().when(userValidator).validateCreateUserRequest(any(CreateUserRequest.class));
         when(userService.createUser(any(CreateUserRequest.class))).thenReturn(expectedResponse);
 
-        // When & Then
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createUserRequest)))
@@ -113,77 +104,12 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.name").value("John Doe"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"));
 
-        // Verify interactions
         verify(userValidator).validateCreateUserRequest(any(CreateUserRequest.class));
         verify(userService).createUser(any(CreateUserRequest.class));
     }
 
     @Test
-    void fetchUserByID_Success() throws Exception {
-        // Given
-        String userId = "usr-123456";
-        UserResponse expectedResponse = createUserResponse(userId, "John Doe", "john.doe@example.com");
-
-        when(userService.getuserById(eq(userId))).thenReturn(expectedResponse);
-
-        // When & Then
-        mockMvc.perform(get("/v1/users/{userId}", userId))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(userId))
-                .andExpect(jsonPath("$.name").value("John Doe"))
-                .andExpect(jsonPath("$.email").value("john.doe@example.com"));
-
-        verify(userService).getuserById(eq(userId));
-    }
-
-    @Test
-    void fetchUserByID_UserNotFound() throws Exception {
-        // Given
-        String userId = "usr-nonexistent";
-        when(userService.getuserById(eq(userId)))
-                .thenThrow(new EagleBankException("User not found", HttpStatusCode.valueOf(404)));
-
-        // When & Then
-        var response = mockMvc.perform(get("/v1/users/{userId}", userId))
-                .andExpect(status().isNotFound())
-                .andReturn();
-        System.out.println(response);
-
-        verify(userService).getuserById(eq(userId));
-    }
-
-    @Test
-    void fetchUserByID_EmptyUserId() throws Exception {
-        // When & Then
-        mockMvc.perform(get("/v1/users/"))
-                .andExpect(status().isNotFound()); // Spring returns 404 for missing path variable
-
-        verify(userService, never()).getuserById(any());
-    }
-
-    @Test
-    void fetchUserByID_UserIdWithSpecialCharacters() throws Exception {
-        // Given
-        String userId = "usr-ABC123def";
-        UserResponse expectedResponse = createUserResponse(userId, "Jane Smith", "jane.smith@example.com");
-
-        when(userService.getuserById(eq(userId))).thenReturn(expectedResponse);
-
-        // When & Then
-        mockMvc.perform(get("/v1/users/{userId}", userId))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(userId))
-                .andExpect(jsonPath("$.name").value("Jane Smith"))
-                .andExpect(jsonPath("$.email").value("jane.smith@example.com"));
-
-        verify(userService).getuserById(eq(userId));
-    }
-
-    @Test
     void createUser_NullRequest() throws Exception {
-        // When & Then
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
@@ -195,7 +121,6 @@ class UserControllerTest {
 
     @Test
     void createUser_MalformedJson() throws Exception {
-        // When & Then
         mockMvc.perform(post("/v1/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{ invalid json }"))
@@ -205,19 +130,100 @@ class UserControllerTest {
         verify(userService, never()).createUser(any());
     }
 
+    // FETCH user tests - authService must match userId in path
+    @Test
+    void fetchUserByID_Success() throws Exception {
+        String userId = "usr-123456";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(userId);
+
+        UserResponse expectedResponse = createUserResponse(userId, "John Doe", "john.doe@example.com");
+
+        when(userService.getuserById(eq(userId))).thenReturn(expectedResponse);
+
+        mockMvc.perform(get("/v1/users/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.name").value("John Doe"))
+                .andExpect(jsonPath("$.email").value("john.doe@example.com"));
+
+        verify(authService).getAuthenticatedUserId();
+        verify(userService).getuserById(eq(userId));
+    }
+
+    @Test
+    void fetchUserByID_AccessDenied() throws Exception {
+        String userId = "usr-123456";
+        String otherUserId = "usr-654321";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(otherUserId);
+
+        mockMvc.perform(get("/v1/users/{userId}", userId))
+                .andExpect(status().isForbidden());
+
+        verify(authService).getAuthenticatedUserId();
+        verify(userService, never()).getuserById(any());
+    }
+
+    @Test
+    void fetchUserByID_UserNotFound() throws Exception {
+        String userId = "usr-nonexistent";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(userId);
+        when(userService.getuserById(eq(userId)))
+                .thenThrow(new EagleBankException("User not found", HttpStatusCode.valueOf(404)));
+
+        mockMvc.perform(get("/v1/users/{userId}", userId))
+                .andExpect(status().isNotFound());
+
+        verify(authService).getAuthenticatedUserId();
+        verify(userService).getuserById(eq(userId));
+    }
+
+    @Test
+    void fetchUserByID_EmptyUserId() throws Exception {
+        mockMvc.perform(get("/v1/users/"))
+                .andExpect(status().isNotFound());
+
+        verify(authService, never()).getAuthenticatedUserId();
+        verify(userService, never()).getuserById(any());
+    }
+
+    @Test
+    void fetchUserByID_UserIdWithSpecialCharacters() throws Exception {
+        String userId = "usr-ABC123def";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(userId);
+
+        UserResponse expectedResponse = createUserResponse(userId, "Jane Smith", "jane.smith@example.com");
+
+        when(userService.getuserById(eq(userId))).thenReturn(expectedResponse);
+
+        mockMvc.perform(get("/v1/users/{userId}", userId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.name").value("Jane Smith"))
+                .andExpect(jsonPath("$.email").value("jane.smith@example.com"));
+
+        verify(authService).getAuthenticatedUserId();
+        verify(userService).getuserById(eq(userId));
+    }
+
+    // UPDATE user tests - authService must match path userId, otherwise 403
+
     @Test
     void updateUserByID_Success() throws Exception {
         String userId = "usr-123ABC";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(userId);
+
         UpdateUserRequest request = new UpdateUserRequest();
         request.setName("Updated Name");
         request.setEmail("updated.email@example.com");
-        // set other fields if any
 
-        UserResponse updatedResponse = new UserResponse();
-        updatedResponse.setId(userId);
-        updatedResponse.setName("Updated Name");
-        updatedResponse.setEmail("updated.email@example.com");
-        // set other fields if any
+        UserResponse updatedResponse = createUserResponse(userId, "Updated Name", "updated.email@example.com");
 
         when(userService.updateUser(eq(userId), any(UpdateUserRequest.class))).thenReturn(updatedResponse);
 
@@ -230,6 +236,57 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.name").value("Updated Name"))
                 .andExpect(jsonPath("$.email").value("updated.email@example.com"));
 
+        verify(authService).getAuthenticatedUserId();
         verify(userService).updateUser(eq(userId), any(UpdateUserRequest.class));
+    }
+
+    @Test
+    void updateUserByID_AccessDenied() throws Exception {
+        String userId = "usr-123ABC";
+        String otherUserId = "usr-999999";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(otherUserId);
+
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setName("Updated Name");
+        request.setEmail("updated.email@example.com");
+
+        mockMvc.perform(patch("/v1/users/{userId}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden());
+
+        verify(authService).getAuthenticatedUserId();
+        verify(userService, never()).updateUser(any(), any());
+    }
+
+    // DELETE user tests - authService must match path userId, otherwise 403
+
+    @Test
+    void deleteUserByID_Success() throws Exception {
+        String userId = "usr-555555";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(userId);
+        doNothing().when(userService).deleteUserById(userId);
+
+        mockMvc.perform(delete("/v1/users/{userId}", userId))
+                .andExpect(status().isNoContent());
+
+        verify(authService).getAuthenticatedUserId();
+        verify(userService).deleteUserById(userId);
+    }
+
+    @Test
+    void deleteUserByID_AccessDenied() throws Exception {
+        String userId = "usr-555555";
+        String otherUserId = "usr-777777";
+
+        when(authService.getAuthenticatedUserId()).thenReturn(otherUserId);
+
+        mockMvc.perform(delete("/v1/users/{userId}", userId))
+                .andExpect(status().isForbidden());
+
+        verify(authService).getAuthenticatedUserId();
+        verify(userService, never()).deleteUserById(any());
     }
 }

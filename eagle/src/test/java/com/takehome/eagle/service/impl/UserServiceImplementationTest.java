@@ -8,7 +8,7 @@ import com.takehome.eagle.model.CreateUserRequestAddress;
 import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.model.UserResponse;
 import com.takehome.eagle.repository.UserRepository;
-import com.takehome.eagle.utilities.EncryptionService;
+import com.takehome.eagle.utilities.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 class UserServiceImplementationTest {
@@ -27,7 +26,7 @@ class UserServiceImplementationTest {
     private UserRepository userRepository;
 
     @Mock
-    private EncryptionService encryptionService;
+    private AuthService authService;
 
     @InjectMocks
     private UserServiceImplementation userService;
@@ -57,7 +56,7 @@ class UserServiceImplementationTest {
                 .phoneNumber("1234567890")
                 .address(address);
 
-        when(encryptionService.encrypt(anyString())).thenReturn("encryptedPassword");
+        when(authService.encrypt(anyString())).thenReturn("encryptedPassword");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
             User u = invocation.getArgument(0);
             u.setId("1"); // Simulate JPA setting an ID
@@ -89,7 +88,7 @@ class UserServiceImplementationTest {
                         .town("Failtown")
                         .county("Failshire")
                         .postcode("000"));
-        when(encryptionService.encrypt(anyString())).thenReturn("encryptedPassword");
+        when(authService.encrypt(anyString())).thenReturn("encryptedPassword");
         when(userRepository.save(any(User.class))).thenThrow(new RuntimeException("DB error"));
 
         // Act + Assert

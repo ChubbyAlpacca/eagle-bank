@@ -15,3 +15,11 @@ databaseChangeLog:
         - loadData:
             file: db/static/address_data.csv
             tableName: ADDRESS
+  - changeSet:
+      id: load-accounts
+      author: turkey
+      runAlways: true
+      changes:
+        - loadData:
+            file: db/static/accounts_data.csv
+            tableName: ACCOUNTS
