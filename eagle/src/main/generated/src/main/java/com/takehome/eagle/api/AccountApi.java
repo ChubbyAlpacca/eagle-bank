@@ -37,7 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import jakarta.annotation.Generated;
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-07-15T16:50:45.816072+01:00[Europe/London]", comments = "Generator version: 7.6.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-07-16T12:06:38.809147+01:00[Europe/London]", comments = "Generator version: 7.6.0")
 @Validated
 @Tag(name = "account", description = "Manage a bank account")
 public interface AccountApi {
