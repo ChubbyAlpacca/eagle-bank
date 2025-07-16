@@ -8,6 +8,7 @@ import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.service.UserService;
 import com.takehome.eagle.utilities.EncryptionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.takehome.eagle.model.UserResponse;
@@ -74,13 +75,22 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(String userId, UpdateUserRequest updateUserRequest) {
-        Optional<User> optionalUser = userRepository.getUserByUserId(UUID.fromString(userId));
+    public UserResponse updateUser(String userId, UpdateUserRequest request) {
+        UUID uuid = UUID.fromString(userId);
+        Optional<User> optionalUser = userRepository.getUserByUserId(uuid);
         if (optionalUser.isEmpty()) {
             throw new EagleBankException("User not found", HttpStatusCode.valueOf(404));
         }
-//        optionalUser.get().
-        return null;
+        User userEntity = optionalUser.get();
+        User updatedUser = new User();
+        updatedUser.setUserId(userEntity.getUserId());
+        updatedUser.setName(request.getName() != null ? request.getName() : userEntity.getName());
+        updatedUser.setEmail(request.getEmail() != null ? request.getEmail() : userEntity.getEmail());
+        updatedUser.setPhoneNumber(request.getPhoneNumber() != null ? request.getPhoneNumber() : userEntity.getPhoneNumber());
+        updatedUser.setAddress(handleAddressUpdate(request.getAddress(), userEntity.getAddress()));
+        updatedUser.setUpdatedAt(LocalDateTime.now());
+        User persistedUser = userRepository.save(updatedUser);
+        return mapToUserResponse(persistedUser);
     }
 
     @Override
@@ -110,5 +120,20 @@ public class UserServiceImplementation implements UserService {
                 .town(address.getTown())
                 .county(address.getCounty())
                 .postcode(address.getPostcode());
+    }
+
+    private Address handleAddressUpdate(@Valid CreateUserRequestAddress address, Address persistedAddress) {
+        if (address == null) {
+            return persistedAddress;
+        }
+        Address updatedAddress = new Address();
+        updatedAddress.setLine1(address.getLine1() != null ? address.getLine1() : persistedAddress.getLine1());
+        updatedAddress.setLine2(address.getLine2() != null ? address.getLine2() : persistedAddress.getLine2());
+        updatedAddress.setLine3(address.getLine3() != null ? address.getLine3() : persistedAddress.getLine3());
+        updatedAddress.setTown(address.getTown() != null ? address.getTown() : persistedAddress.getTown());
+        updatedAddress.setCounty(address.getCounty() != null ? address.getCounty() : persistedAddress.getCounty());
+        updatedAddress.setPostcode(address.getPostcode() != null ? address.getPostcode() : persistedAddress.getPostcode());
+        updatedAddress.setUser(persistedAddress.getUser());
+        return updatedAddress;
     }
 }

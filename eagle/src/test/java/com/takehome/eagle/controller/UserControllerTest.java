@@ -1,10 +1,13 @@
 package com.takehome.eagle.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.takehome.eagle.entity.Address;
+import com.takehome.eagle.entity.User;
 import com.takehome.eagle.exceptions.EagleBankException;
 import com.takehome.eagle.exceptions.GlobalExceptionHandler;
 import com.takehome.eagle.model.CreateUserRequest;
 import com.takehome.eagle.model.CreateUserRequestAddress;
+import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.model.UserResponse;
 import com.takehome.eagle.service.UserService;
 import com.takehome.eagle.service.impl.UserServiceImplementation;
@@ -21,6 +24,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -197,5 +203,33 @@ class UserControllerTest {
 
         verify(userValidator, never()).validateCreateUserRequest(any());
         verify(userService, never()).createUser(any());
+    }
+
+    @Test
+    void updateUserByID_Success() throws Exception {
+        String userId = "usr-123ABC";
+        UpdateUserRequest request = new UpdateUserRequest();
+        request.setName("Updated Name");
+        request.setEmail("updated.email@example.com");
+        // set other fields if any
+
+        UserResponse updatedResponse = new UserResponse();
+        updatedResponse.setId(userId);
+        updatedResponse.setName("Updated Name");
+        updatedResponse.setEmail("updated.email@example.com");
+        // set other fields if any
+
+        when(userService.updateUser(eq(userId), any(UpdateUserRequest.class))).thenReturn(updatedResponse);
+
+        mockMvc.perform(patch("/v1/users/{userId}", userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(userId))
+                .andExpect(jsonPath("$.name").value("Updated Name"))
+                .andExpect(jsonPath("$.email").value("updated.email@example.com"));
+
+        verify(userService).updateUser(eq(userId), any(UpdateUserRequest.class));
     }
 }

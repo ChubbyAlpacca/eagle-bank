@@ -5,6 +5,7 @@ import com.takehome.eagle.entity.User;
 import com.takehome.eagle.exceptions.EagleBankException;
 import com.takehome.eagle.model.CreateUserRequest;
 import com.takehome.eagle.model.CreateUserRequestAddress;
+import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.model.UserResponse;
 import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.utilities.EncryptionService;
@@ -129,5 +130,40 @@ class UserServiceImplementationTest {
         assertThat(response.getAddress().getTown()).isEqualTo("London");
 
         verify(userRepository).getUserByUserId(userId);
+    }
+
+    @Test
+    void shouldUpdateUser() {
+    // Arrange
+        UUID userId = UUID.randomUUID();
+        User existingUser = new User();
+        existingUser.setId(String.valueOf(5));
+        existingUser.setUserId(userId);
+        existingUser.setName("Old Name");
+        existingUser.setEmail("email@email.com");
+        Address address = new Address();
+        address.setLine1("123 Old St");
+        address.setTown("Old Town");
+        address.setCounty("Old County");
+        address.setPostcode("OLD123");
+        existingUser.setAddress(address);
+
+        when(userRepository.getUserByUserId(userId)).thenReturn(Optional.of(existingUser));
+        UpdateUserRequest updateRequest = new UpdateUserRequest();
+        updateRequest.setName("New Name");
+        updateRequest.setEmail("newEmail@email.com");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User updatedUser = invocation.getArgument(0);
+            updatedUser.setId(String.valueOf(5)); // Simulate JPA setting an ID
+            return updatedUser;
+        });
+        // Act
+        UserResponse updatedResponse = userService.updateUser(userId.toString(), updateRequest);
+        // Assert
+        assertThat(updatedResponse).isNotNull();
+        assertThat(updatedResponse.getName()).isEqualTo("New Name");
+        assertThat(updatedResponse.getEmail()).isEqualTo("newEmail@email.com");
+        verify(userRepository).getUserByUserId(userId);
+        verify(userRepository).save(userCaptor.capture());
     }
 }
