@@ -1,5 +1,6 @@
 package com.takehome.eagle.utilities;
 
+import com.takehome.eagle.exceptions.EagleBankException;
 import com.takehome.eagle.model.CreateUserRequest;
 import com.takehome.eagle.model.CreateUserRequestAddress;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +41,7 @@ class UserValidatorTest {
         request.setName(null);
 
         assertThatThrownBy(() -> validator.validateCreateUserRequest(request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(EagleBankException.class)
                 .hasMessageContaining("Validation failed");
     }
 
@@ -50,7 +51,7 @@ class UserValidatorTest {
         request.setEmail("");
 
         assertThatThrownBy(() -> validator.validateCreateUserRequest(request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(EagleBankException.class)
                 .hasMessageContaining("Validation failed");
     }
 
@@ -60,7 +61,7 @@ class UserValidatorTest {
         request.setAddress(null);
 
         assertThatThrownBy(() -> validator.validateCreateUserRequest(request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(EagleBankException.class)
                 .hasMessageContaining("Validation failed");
     }
 
@@ -70,7 +71,7 @@ class UserValidatorTest {
         request.setAddress(new CreateUserRequestAddress());
 
         assertThatThrownBy(() -> validator.validateCreateUserRequest(request))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(EagleBankException.class)
                 .hasMessageContaining("Validation failed");
     }
 

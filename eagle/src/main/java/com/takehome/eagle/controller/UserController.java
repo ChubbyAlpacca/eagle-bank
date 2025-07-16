@@ -1,6 +1,7 @@
 package com.takehome.eagle.controller;
 
 import com.takehome.eagle.model.CreateUserRequest;
+import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.service.UserService;
 import com.takehome.eagle.utilities.UserValidator;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,5 +37,22 @@ public class UserController implements UserApi {
         log.info("Fetching user with ID: {}", userId);
         UserResponse userResponse = userService.getuserById(userId);
         return ResponseEntity.ok(userResponse);
+    }
+
+    @Override
+    public ResponseEntity<UserResponse> updateUserByID(
+            @Pattern(regexp = "^usr-[A-Za-z0-9]+$") @Parameter(name = "userId", description = "ID of the user", required = true, in = ParameterIn.PATH) @PathVariable("userId") String userId,
+            @Parameter(name = "UpdateUserRequest", description = "Update user details", required = true) @Valid @RequestBody UpdateUserRequest updateUserRequest
+    ) {
+        return ResponseEntity.ok(userService.updateUser(userId, updateUserRequest));
+    }
+
+    @Override
+    public ResponseEntity<Void> deleteUserByID(
+            @Pattern(regexp = "^usr-[A-Za-z0-9]+$") @Parameter(name = "userId", description = "ID of the user", required = true, in = ParameterIn.PATH) @PathVariable("userId") String userId
+    ) {
+        //TODO implement this method - ensure user can only delete themself
+         userService.deleteUserById(userId);
+        return null;
     }
 }

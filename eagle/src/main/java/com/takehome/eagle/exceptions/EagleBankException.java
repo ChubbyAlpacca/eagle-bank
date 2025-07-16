@@ -11,9 +11,17 @@ import org.springframework.http.HttpStatusCode;
 public class EagleBankException extends RuntimeException {
 
     private final HttpStatusCode httpstatusCode;
+    private final Object errorResponse; // optional error body
 
     public EagleBankException(String message, HttpStatusCode code) {
         super(message);
-        httpstatusCode = code;
+        this.httpstatusCode = code;
+        this.errorResponse = null;
+    }
+
+    public EagleBankException(String message, HttpStatusCode code, Object errorResponse) {
+        super(message);
+        this.httpstatusCode = code;
+        this.errorResponse = errorResponse;
     }
 }

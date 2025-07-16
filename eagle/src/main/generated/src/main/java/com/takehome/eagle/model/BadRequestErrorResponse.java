@@ -22,7 +22,7 @@ import jakarta.annotation.Generated;
  * BadRequestErrorResponse
  */
 
-@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-07-16T12:06:38.809147+01:00[Europe/London]", comments = "Generator version: 7.6.0")
+@Generated(value = "org.openapitools.codegen.languages.SpringCodegen", date = "2025-07-16T15:38:59.709464+01:00[Europe/London]", comments = "Generator version: 7.6.0")
 public class BadRequestErrorResponse {
 
   private String message;

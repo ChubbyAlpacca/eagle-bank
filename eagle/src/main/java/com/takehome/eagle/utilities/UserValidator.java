@@ -1,9 +1,11 @@
 package com.takehome.eagle.utilities;
 
+import com.takehome.eagle.exceptions.EagleBankException;
 import com.takehome.eagle.model.BadRequestErrorResponse;
 import com.takehome.eagle.model.BadRequestErrorResponseDetailsInner;
 import com.takehome.eagle.model.CreateUserRequest;
 import com.takehome.eagle.model.CreateUserRequestAddress;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,7 +42,7 @@ public class UserValidator {
         }
         if (!errorDetails.isEmpty()) {
             response.setDetails(errorDetails);
-            throw new IllegalArgumentException("Validation failed: " + response);
+            throw new EagleBankException("Validation failed", HttpStatusCode.valueOf(400), response);
         }
     }
 

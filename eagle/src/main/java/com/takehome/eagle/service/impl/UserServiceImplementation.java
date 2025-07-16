@@ -4,6 +4,7 @@ import com.takehome.eagle.entity.User;
 import com.takehome.eagle.exceptions.EagleBankException;
 import com.takehome.eagle.model.CreateUserRequest;
 import com.takehome.eagle.model.CreateUserRequestAddress;
+import com.takehome.eagle.model.UpdateUserRequest;
 import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.service.UserService;
 import com.takehome.eagle.utilities.EncryptionService;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -55,9 +57,13 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public UserResponse getuserById(String userId) {
-        var user =  userRepository.getUserByUserId(UUID.fromString(userId)).get();
+        var user =  userRepository.getUserByUserId(UUID.fromString(userId));
         log.info("Fetched user with ID: {}", userId);
-        return mapToUserResponse(user);
+        if (user.isEmpty()) {
+            throw new EagleBankException("User not found", HttpStatusCode.valueOf(404));
+        } else {
+            return mapToUserResponse(user.get());
+        }
     }
 
     @Override
@@ -65,6 +71,25 @@ public class UserServiceImplementation implements UserService {
         return userRepository.getUserByName(userName)
                 .map(User::getPassword)
                 .orElseThrow(() -> new EagleBankException("User not found", HttpStatusCode.valueOf(404)));
+    }
+
+    @Override
+    public UserResponse updateUser(String userId, UpdateUserRequest updateUserRequest) {
+        Optional<User> optionalUser = userRepository.getUserByUserId(UUID.fromString(userId));
+        if (optionalUser.isEmpty()) {
+            throw new EagleBankException("User not found", HttpStatusCode.valueOf(404));
+        }
+//        optionalUser.get().
+        return null;
+    }
+
+    @Override
+    public void deleteUserById(String userId) {
+        log.info("Retrieving user {}", userId);
+        Optional<User> optionalUser = userRepository.getUserByUserId(UUID.fromString(userId));
+        //TODO should do an acct check here
+        optionalUser.ifPresent(userRepository::delete);
+        log.info("User {} successfully deleted.", userId);
     }
 
 
