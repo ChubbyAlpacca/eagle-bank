@@ -4,7 +4,9 @@ import com.takehome.eagle.model.CreateUserRequest;
 import com.takehome.eagle.service.UserService;
 import com.takehome.eagle.utilities.UserValidator;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,10 +29,12 @@ public class UserController implements UserApi {
         return ResponseEntity.status(201).body(userService.createUser(createUserRequest));
     }
 
-    @GetMapping("/{userId}")
-    public UserResponse getUser(@PathVariable("userId") String userId) {
+    @Override
+    public ResponseEntity<UserResponse> fetchUserByID(
+            @Pattern(regexp = "^usr-[A-Za-z0-9]+$") @Parameter(name = "userId", description = "ID of the user", required = true, in = ParameterIn.PATH) @PathVariable("userId") String userId
+    ) {
         log.info("Fetching user with ID: {}", userId);
-        return userService.getuserById(userId);
-
+        UserResponse userResponse = userService.getuserById(userId);
+        return ResponseEntity.ok(userResponse);
     }
 }

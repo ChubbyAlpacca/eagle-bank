@@ -54,7 +54,7 @@ public class JwtFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (JwtException e) {
                 log.warn("JWT validation failed: {}", e.getMessage());
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                SecurityContextHolder.clearContext();
                 return;
         }
         filterChain.doFilter(request, response);
@@ -62,11 +62,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        System.out.println("JwtFilter.shouldNotFilter URI: " + request.getRequestURI());
         String path = request.getRequestURI();
-        return path.equals("/v1/auth/token") ||
-                (request.getMethod().equals("POST") && path.equals("/v1/users")) ||
-                path.startsWith("/actuator/");
+        return path.startsWith("/v1/auth")
+                || path.startsWith("/actuator")
+                || path.equals("/v1/users");
     }
-
 }
 

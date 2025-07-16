@@ -3,7 +3,6 @@ package com.takehome.eagle.controller;
 import com.takehome.eagle.api.AuthApi;
 import com.takehome.eagle.model.GetJwtToken200Response;
 import com.takehome.eagle.model.GetJwtTokenRequest;
-import com.takehome.eagle.repository.UserRepository;
 import com.takehome.eagle.service.UserService;
 import com.takehome.eagle.utilities.EncryptionService;
 import io.jsonwebtoken.Jwts;
@@ -14,20 +13,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
-import static org.springframework.http.ResponseEntity.ok;
-
 @RestController
 @Slf4j
-@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class TokenController implements AuthApi {
 
