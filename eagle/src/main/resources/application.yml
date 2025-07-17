@@ -5,7 +5,7 @@ spring:
       password: none
   logging:
     level:
-      org.springframework.security: DEBUG
+      org.springframework.security: DEBUG, TRACE
   management:
     endpoints:
       web:

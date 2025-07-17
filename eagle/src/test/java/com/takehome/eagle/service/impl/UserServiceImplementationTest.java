@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -110,15 +111,15 @@ class UserServiceImplementationTest {
 
         User user = User.builder()
                 .id("1")
-                .userId(userId)
+                .userId(userId.toString())
                 .name("Jane Doe")
                 .email("jane@example.com")
                 .phoneNumber("9876543210")
                 .address(address)
-                .createdAt(LocalDateTime.now())
+                .createdAt(OffsetDateTime.now())
                 .build();
 
-        when(userRepository.getUserByUserId(userId)).thenReturn(Optional.of(user));
+        when(userRepository.getUserByUserId(userId.toString())).thenReturn(Optional.of(user));
 
         // Act
         UserResponse response = userService.getuserById(userId.toString());
@@ -128,7 +129,7 @@ class UserServiceImplementationTest {
         assertThat(response.getName()).isEqualTo("Jane Doe");
         assertThat(response.getAddress().getTown()).isEqualTo("London");
 
-        verify(userRepository).getUserByUserId(userId);
+        verify(userRepository).getUserByUserId(userId.toString());
     }
 
     @Test
@@ -137,7 +138,7 @@ class UserServiceImplementationTest {
         UUID userId = UUID.randomUUID();
         User existingUser = new User();
         existingUser.setId(String.valueOf(5));
-        existingUser.setUserId(userId);
+        existingUser.setUserId(userId.toString());
         existingUser.setName("Old Name");
         existingUser.setEmail("email@email.com");
         Address address = new Address();
@@ -147,7 +148,7 @@ class UserServiceImplementationTest {
         address.setPostcode("OLD123");
         existingUser.setAddress(address);
 
-        when(userRepository.getUserByUserId(userId)).thenReturn(Optional.of(existingUser));
+        when(userRepository.getUserByUserId(userId.toString())).thenReturn(Optional.of(existingUser));
         UpdateUserRequest updateRequest = new UpdateUserRequest();
         updateRequest.setName("New Name");
         updateRequest.setEmail("newEmail@email.com");
@@ -162,7 +163,7 @@ class UserServiceImplementationTest {
         assertThat(updatedResponse).isNotNull();
         assertThat(updatedResponse.getName()).isEqualTo("New Name");
         assertThat(updatedResponse.getEmail()).isEqualTo("newEmail@email.com");
-        verify(userRepository).getUserByUserId(userId);
+        verify(userRepository).getUserByUserId(userId.toString());
         verify(userRepository).save(userCaptor.capture());
     }
 }

@@ -15,7 +15,9 @@ import com.takehome.eagle.model.UserResponse;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.security.SecureRandom;
+import java.time.OffsetDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,17 +28,23 @@ public class UserServiceImplementation implements UserService {
 
     private final UserRepository userRepository;
     private final AuthService authService;
+
+    private static final String PREFIX = "usr-";
+    private static final String ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final SecureRandom RANDOM = new SecureRandom();
+
     @Override
     public UserResponse createUser(CreateUserRequest payload) {
         log.info("Creating user with details: {}", payload);
         var userId = UUID.randomUUID();
         var user = User.builder()
-                .userId(userId)
+                .userId(generateUserId())
                 .name(payload.getName())
                 .password(authService.encrypt(payload.getPassword()))
                 .email(payload.getEmail())
                 .phoneNumber(payload.getPhoneNumber())
-                .createdAt(LocalDateTime.now())
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
                 .build();
         var address = Address.builder()
                 .line1(payload.getAddress().getLine1())
@@ -58,7 +66,7 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public UserResponse getuserById(String userId) {
-        var user =  userRepository.getUserByUserId(UUID.fromString(userId));
+        var user =  userRepository.getUserByUserId(userId);
         log.info("Fetched user with ID: {}", userId);
         if (user.isEmpty()) {
             throw new EagleBankException("User not found", HttpStatusCode.valueOf(404));
@@ -76,8 +84,7 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     public UserResponse updateUser(String userId, UpdateUserRequest request) {
-        UUID uuid = UUID.fromString(userId);
-        Optional<User> optionalUser = userRepository.getUserByUserId(uuid);
+        Optional<User> optionalUser = userRepository.getUserByUserId(userId);
         if (optionalUser.isEmpty()) {
             throw new EagleBankException("User not found", HttpStatusCode.valueOf(404));
         }
@@ -88,7 +95,8 @@ public class UserServiceImplementation implements UserService {
         updatedUser.setEmail(request.getEmail() != null ? request.getEmail() : userEntity.getEmail());
         updatedUser.setPhoneNumber(request.getPhoneNumber() != null ? request.getPhoneNumber() : userEntity.getPhoneNumber());
         updatedUser.setAddress(handleAddressUpdate(request.getAddress(), userEntity.getAddress()));
-        updatedUser.setUpdatedAt(LocalDateTime.now());
+        updatedUser.setCreatedAt(userEntity.getCreatedAt()); // Keep the original creation date
+        updatedUser.setUpdatedAt(OffsetDateTime.now());
         User persistedUser = userRepository.save(updatedUser);
         return mapToUserResponse(persistedUser);
     }
@@ -96,7 +104,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public void deleteUserById(String userId) {
         log.info("Retrieving user {}", userId);
-        Optional<User> optionalUser = userRepository.getUserByUserId(UUID.fromString(userId));
+        Optional<User> optionalUser = userRepository.getUserByUserId(userId);
         //TODO should do an acct check here
         optionalUser.ifPresent(userRepository::delete);
         log.info("User {} successfully deleted.", userId);
@@ -109,7 +117,9 @@ public class UserServiceImplementation implements UserService {
                 .name(user.getName())
                 .email(user.getEmail())
                 .address(mapToAddressResponse(user.getAddress())) // Assuming address is not part of UserResponse
-                .phoneNumber(user.getPhoneNumber());
+                .phoneNumber(user.getPhoneNumber())
+                .createdTimestamp(user.getCreatedAt())
+                .updatedTimestamp(user.getUpdatedAt());
     }
 
     private CreateUserRequestAddress mapToAddressResponse(Address address) {
@@ -135,5 +145,16 @@ public class UserServiceImplementation implements UserService {
         updatedAddress.setPostcode(address.getPostcode() != null ? address.getPostcode() : persistedAddress.getPostcode());
         updatedAddress.setUser(persistedAddress.getUser());
         return updatedAddress;
+    }
+
+    public static String generateUserId() {
+        int length = 10;
+        StringBuilder suffix = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            int index = RANDOM.nextInt(ALPHANUMERIC.length());
+            suffix.append(ALPHANUMERIC.charAt(index));
+        }
+
+        return PREFIX + suffix.toString();
     }
 }

@@ -19,6 +19,7 @@ public class Address {
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "user_id")
+    @ToString.Exclude
     private User user;
 
     @Column(name = "line_1")

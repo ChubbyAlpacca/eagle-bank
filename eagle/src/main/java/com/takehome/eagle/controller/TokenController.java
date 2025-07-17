@@ -51,6 +51,7 @@ public class TokenController implements AuthApi {
 
     public String generateJwtToken(String userId, String password) {
         Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+        log.info("SECRET KEY create" +  secretKey);
         return Jwts.builder()
                 .setSubject(userId)
                 .setIssuedAt(new Date())

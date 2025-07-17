@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +22,7 @@ class UserRepositoryTest {
     @Test
     void getUserByUserId_shouldReturnEmptyWhenNotFound() {
         UUID nonExistentUserId = UUID.randomUUID();
-        var result = userRepository.getUserByUserId(nonExistentUserId);
+        var result = userRepository.getUserByUserId(nonExistentUserId.toString());
         assertTrue(result.isEmpty(), "Expected no user to be found for the non-existent ID");
     }
 
@@ -31,11 +32,12 @@ class UserRepositoryTest {
         UUID userId = UUID.randomUUID();
 
         User user = User.builder()
-                .userId(userId)
+                .userId(userId.toString())
                 .name("Test User")
                 .email("test@example.com")
                 .phoneNumber("1234567890")
-                .createdAt(LocalDateTime.now())
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
                 .build();
 
         Address address = Address.builder()
@@ -55,9 +57,9 @@ class UserRepositoryTest {
 
         // Then
         assertNotNull(saved.getId());
-        assertThat(userRepository.getUserByUserId(userId)).isPresent();
+        assertThat(userRepository.getUserByUserId(userId.toString())).isPresent();
 
-        var retrieved = userRepository.getUserByUserId(userId).get();
+        var retrieved = userRepository.getUserByUserId(userId.toString()).get();
         assertEquals("Test User", retrieved.getName());
         assertEquals("123 Main St", retrieved.getAddress().getLine1());
     }
